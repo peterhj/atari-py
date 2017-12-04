@@ -44,6 +44,7 @@ enum Action {
     PLAYER_A_UPLEFTFIRE     = 15,
     PLAYER_A_DOWNRIGHTFIRE  = 16,
     PLAYER_A_DOWNLEFTFIRE   = 17,
+    PLAYER_A_MAX_ACTION     = 18,
     PLAYER_B_NOOP           = 18,
     PLAYER_B_FIRE           = 19,
     PLAYER_B_UP             = 20,
@@ -62,12 +63,14 @@ enum Action {
     PLAYER_B_UPLEFTFIRE     = 33,
     PLAYER_B_DOWNRIGHTFIRE  = 34,
     PLAYER_B_DOWNLEFTFIRE   = 35,
+    PLAYER_B_MAX_ACTION     = 36,
     RESET                   = 40, // MGB: Use SYSTEM_RESET to reset the environment. 
     UNDEFINED               = 41,
     RANDOM                  = 42,
     SAVE_STATE              = 43,
     LOAD_STATE              = 44,
     SYSTEM_RESET            = 45,
+    SELECT                  = 46,
     LAST_ACTION_INDEX       = 50
 };
 

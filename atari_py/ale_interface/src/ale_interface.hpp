@@ -81,6 +81,12 @@ public:
   // game over screen.
   reward_t act(Action action);
 
+  // Applies an action to the game and returns the reward. It is the
+  // user's responsibility to check if the game has ended and reset
+  // when necessary - this method will keep pressing buttons on the
+  // game over screen.
+  void act2(Action actionA, Action actionB, reward_t *rewardA, reward_t *rewardB);
+
   // Indicates if the game has ended.
   bool game_over() const;
 
@@ -100,6 +106,9 @@ public:
 
   // The remaining number of lives.
   const int lives();
+
+  // The remaining number of lives.
+  const int livesB();
 
   // Returns the frame number since the start of the current episode
   int getEpisodeFrameNumber() const;

@@ -1,4 +1,4 @@
-  /* *****************************************************************************
+/* *****************************************************************************
  * The line 78 is based on Xitari's code, from Google Inc.
  *
  * This program is free software; you can redistribute it and/or
@@ -52,6 +52,7 @@ struct RomSettings {
 
     // get the most recently observed reward
     virtual reward_t getReward() const = 0;
+    virtual reward_t getRewardB() const { return 0; }
 
     // the rom-name
     virtual const char *rom() const = 0;
@@ -61,6 +62,7 @@ struct RomSettings {
 
     // is an action part of the minimal set?
     virtual bool isMinimal(const Action &a) const = 0;
+    virtual bool isMinimalB(const Action &a) const { return false; }
 
     // process the latest information from ALE
     virtual void step(const System &system) = 0;
@@ -72,10 +74,12 @@ struct RomSettings {
     virtual void loadState(Deserializer & ser) = 0;
 
     // is an action legal (default: yes)
-    virtual bool isLegal(const Action &a) const;
+    virtual bool isLegal(const Action &a) const = 0;
+    virtual bool isLegalB(const Action &a) const { return false; }
 
     // Remaining lives.
     virtual const int lives() { return isTerminal() ? 0 : 1; }
+    virtual const int livesB() { return isTerminal() ? 0 : 1; }
 
     // Returns a restricted (minimal) set of actions. If not overriden, this is all actions.
     virtual ActionVect getMinimalActionSet();

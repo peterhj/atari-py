@@ -57,6 +57,7 @@
 #include "supported/Phoenix.hpp"
 #include "supported/Pitfall.hpp"
 #include "supported/Pong.hpp"
+#include "supported/Pong2.hpp"
 #include "supported/Pooyan.hpp"
 #include "supported/PrivateEye.hpp"
 #include "supported/QBert.hpp"
@@ -124,6 +125,7 @@ static const RomSettings *roms[]  = {
     new PhoenixSettings(),
     new PitfallSettings(),
     new PongSettings(),
+    new Pong2Settings(),
     new PooyanSettings(),
     new PrivateEyeSettings(),
     new QBertSettings(),

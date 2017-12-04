@@ -62,7 +62,8 @@ class StellaEnvironment {
       *  Note that the post-act() frame number might not correspond to the pre-act() frame
       *  number plus the frame skip.
       */
-    reward_t act(Action player_a_action, Action player_b_action);
+    //reward_t act(Action player_a_action, Action player_b_action);
+    void act(Action player_a_action, Action player_b_action, reward_t *player_a_reward, reward_t *player_b_reward);
 
     /** Returns true once we reach a terminal state */
     bool isTerminal() const;
@@ -80,7 +81,7 @@ class StellaEnvironment {
 
   private:
     /** This applies an action exactly one time step. Helper function to act(). */
-    reward_t oneStepAct(Action player_a_action, Action player_b_action);
+    bool oneStepAct(Action player_a_action, Action player_b_action);
 
     /** Actually emulates the emulator for a given number of steps. */
     void emulate(Action player_a_action, Action player_b_action, size_t num_steps = 1);

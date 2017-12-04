@@ -200,21 +200,52 @@ const int ALEInterface::lives() {
   return romSettings->lives();
 }
 
+// The remaining number of lives.
+const int ALEInterface::livesB() {
+  if (!romSettings.get()){
+    throw std::runtime_error("ROM not set");
+  }
+  return romSettings->livesB();
+}
+
 // Applies an action to the game and returns the reward. It is the
 // user's responsibility to check if the game has ended and reset
 // when necessary - this method will keep pressing buttons on the
 // game over screen.
 reward_t ALEInterface::act(Action action) {
-  reward_t reward = environment->act(action, PLAYER_B_NOOP);
+  reward_t reward = 0;
+  environment->act(action, PLAYER_B_NOOP, &reward, NULL);
   if (theOSystem->p_display_screen != NULL) {
     theOSystem->p_display_screen->display_screen();
     while (theOSystem->p_display_screen->manual_control_engaged()) {
       Action user_action = theOSystem->p_display_screen->getUserAction();
-      reward += environment->act(user_action, PLAYER_B_NOOP);
+      reward_t more_reward = 0;
+      environment->act(user_action, PLAYER_B_NOOP, &more_reward, NULL);
+      reward += more_reward;
       theOSystem->p_display_screen->display_screen();
     }
   }
   return reward;
+}
+
+// Applies an action to the game and returns the reward. It is the
+// user's responsibility to check if the game has ended and reset
+// when necessary - this method will keep pressing buttons on the
+// game over screen.
+void ALEInterface::actB(Action actionA, Action actionB, reward_t *rewardA, reward_t *rewardB) {
+  environment->act(actionA, actionB, rewardA, rewardB);
+  if (theOSystem->p_display_screen != NULL) {
+    theOSystem->p_display_screen->display_screen();
+    while (theOSystem->p_display_screen->manual_control_engaged()) {
+      Action user_action = theOSystem->p_display_screen->getUserAction();
+      reward_t more_rewardA = 0;
+      environment->act(user_action, PLAYER_B_NOOP, &more_rewardA, NULL);
+      if (NULL != rewardA) {
+        *rewardA += more_rewardA;
+      }
+      theOSystem->p_display_screen->display_screen();
+    }
+  }
 }
 
 // Returns the vector of legal actions. This should be called only

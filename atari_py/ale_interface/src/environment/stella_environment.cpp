@@ -120,26 +120,29 @@ void StellaEnvironment::restoreSystemState(const ALEState& target_state) {
 }
 
 void StellaEnvironment::noopIllegalActions(Action & player_a_action, Action & player_b_action) {
-  if (player_a_action < (Action)PLAYER_B_NOOP && 
+  if (player_a_action < (Action)PLAYER_B_NOOP &&
         !m_settings->isLegal(player_a_action)) {
     player_a_action = (Action)PLAYER_A_NOOP;
   }
   // Also drop RESET, which doesn't play nice with our clean notions of RL environments
-  else if (player_a_action == RESET) 
+  else if (player_a_action == RESET) {
     player_a_action = (Action)PLAYER_A_NOOP;
+  }
 
-  if (player_b_action < (Action)RESET && 
-        !m_settings->isLegal((Action)((int)player_b_action - PLAYER_B_NOOP))) {
+  if (player_b_action < (Action)PLAYER_B_MAX_ACTION &&
+        !m_settings->isLegalB((Action)(player_b_action))) {
     player_b_action = (Action)PLAYER_B_NOOP;
   }
-  else if (player_b_action == RESET) 
+  else if (player_b_action == RESET) {
     player_b_action = (Action)PLAYER_B_NOOP;
+  }
 }
 
-reward_t StellaEnvironment::act(Action player_a_action, Action player_b_action) {
+void StellaEnvironment::act(Action player_a_action, Action player_b_action, reward_t *player_a_reward, reward_t *player_b_reward) {
   
   // Total reward received as we repeat the action
-  reward_t sum_rewards = 0;
+  reward_t sum_rewards_a = 0;
+  reward_t sum_rewards_b = 0;
 
   Random& rng = m_osystem->rng();
 
@@ -148,35 +151,47 @@ reward_t StellaEnvironment::act(Action player_a_action, Action player_b_action) 
   for (size_t i = 0; i < m_frame_skip; i++) {
     
     // Stochastically drop actions, according to m_repeat_action_probability
-    if (rng.nextDouble() >= m_repeat_action_probability)
+    if (rng.nextDouble() >= m_repeat_action_probability) {
       m_player_a_action = player_a_action;
+    }
     // @todo Possibly optimize by avoiding call to rand() when player B is "off" ?
-    if (rng.nextDouble() >= m_repeat_action_probability)
+    if (rng.nextDouble() >= m_repeat_action_probability) {
       m_player_b_action = player_b_action;
+    }
 
     // If so desired, request one frame's worth of sound (this does nothing if recording
     // is not enabled)
     m_osystem->sound().recordNextFrame();
 
     // Similarly record screen as needed
-    if (m_screen_exporter.get() != NULL)
-        m_screen_exporter->saveNext(m_screen);
+    if (m_screen_exporter.get() != NULL) {
+      m_screen_exporter->saveNext(m_screen);
+    }
 
     // Use the stored actions, which may or may not have changed this frame
-    sum_rewards += oneStepAct(m_player_a_action, m_player_b_action);
+    if (!oneStepAct(m_player_a_action, m_player_b_action)) {
+      sum_rewards_a += m_settings->getReward();
+      sum_rewards_b += m_settings->getRewardB();
+    }
   }
 
-  return sum_rewards;
+  if (NULL != player_a_reward) {
+    *player_a_reward = sum_rewards_a;
+  }
+  if (NULL != player_b_reward) {
+    *player_b_reward = sum_rewards_b;
+  }
 }
 
 /** Applies the given actions (e.g. updating paddle positions when the paddle is used)
   *  and performs one simulation step in Stella. */
-reward_t StellaEnvironment::oneStepAct(Action player_a_action, Action player_b_action) {
+bool StellaEnvironment::oneStepAct(Action player_a_action, Action player_b_action) {
   // Once in a terminal state, refuse to go any further (special actions must be handled
   //  outside of this environment; in particular reset() should be called rather than passing
   //  RESET or SYSTEM_RESET.
-  if (isTerminal())
-    return 0;
+  if (isTerminal()) {
+    return true;
+  }
 
   // Convert illegal actions into NOOPs; actions such as reset are always legal
   noopIllegalActions(player_a_action, player_b_action);
@@ -186,7 +201,7 @@ reward_t StellaEnvironment::oneStepAct(Action player_a_action, Action player_b_a
   // Increment the number of frames seen so far
   m_state.incrementFrame();
 
-  return m_settings->getReward();
+  return false;
 }
 
 bool StellaEnvironment::isTerminal() const {
